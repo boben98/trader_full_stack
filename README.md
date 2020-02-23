@@ -1,0 +1,1 @@
+# trader_full_stack
