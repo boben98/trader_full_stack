@@ -1,7 +1,8 @@
 const Schema = require("mongoose").Schema;
 const db = require("../config/db");
 
-const Order = db.model("Order", {
+const Account = db.model("Account", {
+  currency: String,
   balance: Number,
   equity: Number,
   margin: Number,
@@ -17,4 +18,4 @@ const Order = db.model("Order", {
   }
 });
 
-module.exports = Order;
+module.exports = Account;

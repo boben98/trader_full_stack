@@ -28,7 +28,8 @@ passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-// Load routing
+require("./config/oanda");
+
 require("./routes")(app);
 
 app.listen(port, () => {
