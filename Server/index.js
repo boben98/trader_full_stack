@@ -25,7 +25,6 @@ app.use((req, res, next) => {
 const User = require("./models/user");
 
 passport.use(User.createStrategy());
-
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 

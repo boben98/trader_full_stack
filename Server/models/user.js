@@ -24,4 +24,14 @@ User.virtual("password")
     return this._password;
   });
 
+User.virtual("oanda_api_key")
+  .set(function(oanda_api_key) {
+    this._oanda_api_key = oanda_api_key;
+    this.salt = this.makeSalt();
+    this.hashed_oanda_api_key = this.encryptPassword(oanda_api_key);
+  })
+  .get(function() {
+    return this._oanda_api_key;
+  });
+
 module.exports = mongoose.model("Client", User);
