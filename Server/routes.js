@@ -3,7 +3,7 @@ const User = require("./models/user");
 const Account = require("./models/account");
 const passport = require("passport");
 
-let user = new User();
+/*let user = new User();
 
 user.name = "Józsi";
 user.email = "jozsi@jozsi.jozsi";
@@ -22,7 +22,7 @@ User.register(user, "password", (err, a) => {
       console.log(err);
     }
   });
-});
+});*/
 
 module.exports = function(app) {
   app.get("/", (req, res) => {

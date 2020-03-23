@@ -15,6 +15,10 @@ const Account = db.model("Account", {
   _user: {
     type: [Schema.Types.ObjectId],
     ref: "User"
+  },
+  _algo: {
+    type: [Schema.Types.ObjectId],
+    ref: "Algo"
   }
 });
 
