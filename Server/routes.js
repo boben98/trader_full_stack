@@ -3,9 +3,9 @@ const User = require("./models/user");
 const Account = require("./models/account");
 const passport = require("passport");
 
-/*let user = new User();
+let user = new User();
 
-user.name = "Józsi";
+/*user.name = "Józsi";
 user.email = "jozsi@jozsi.jozsi";
 user.username = "jozsi@jozsi.jozsi";
 user.phone = 36707070707;
@@ -17,14 +17,14 @@ User.register(user, "password", (err, a) => {
     console.log(err);
   }
 
-  user.save(err => {
+  user.save((err) => {
     if (err) {
       console.log(err);
     }
   });
 });*/
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.get("/", (req, res) => {
     res.send("Hello world");
   });
