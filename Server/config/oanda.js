@@ -44,12 +44,16 @@ let candleValues0 = [];
 let makeOrder = false;
 let makeOrderWaitLimit = 0.0007;
 let lastTicket;
-const startBalance = 100000;
-const startLots = 1;
+let startBalance = 100000;
+const startUnits = 1000000;
 const granularity = "M1";
 
-const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
-const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
+let isOnDataActive = false;
+
+async function getBalance() {
+  let summary = await fx.summary();
+  return parseFloat(summary.account.balance);
+}
 
 async function runAlgorithm() {
   /*await User.findOne().exec((err, result) => {
@@ -58,18 +62,32 @@ async function runAlgorithm() {
   });*/
   const stream = await fx.pricing.stream({ instruments: "EUR_USD" });
 
+  startBalance = getBalance();
+
   // Handle some data
   stream.on("data", async (data) => {
-    await onData(data);
+    if ((await isActiveTime()) && !isOnDataActive) await onData(data);
   });
+}
+
+async function isActiveTime() {
+  let now = new Date().toISOString();
+  let early = "0000-00-00T01:0:00.000000000Z";
+  let late = "0000-00-00T23:0:00.000000000Z";
+
+  return compareTimes(early, now) && compareTimes(now, late);
 }
 
 async function onData(data) {
   if (data.type === "PRICE") {
-    //console.log(data);
+    isOnDataActive = true;
     await setLots();
     await updateMAs(data);
     const cross = await checkCross();
+    await trade(cross);
+    await setTimeout(() => {
+      isOnDataActive = false;
+    }, 5000);
   }
 }
 
@@ -102,7 +120,7 @@ async function roundDown(num, modulus) {
   return Math.floor(num / modulus) * modulus;
 }
 
-async function compareTimes(timeEarly, timeLater, difference) {
+async function compareTimes(timeEarly, timeLater, difference = 0) {
   //assuming the same day
   if (typeof timeEarly === "undefined") return true;
   /*const time1_seconds = await roundDown(
@@ -130,9 +148,9 @@ async function getCandles() {
   return await axios
     .get(url, {
       params: {
-        count: 30,
+        count: 100,
         price: "B",
-        granularity: "S15",
+        granularity: "S5",
       },
       headers: {
         contenttype: "application/json",
@@ -187,7 +205,7 @@ async function getCandles() {
 async function updateMAs(data) {
   const len = candleValues0.length;
   const time = new Date().toISOString();
-  const next = await compareTimes(lastCloseTime, time, granToSeconds.S15);
+  const next = await compareTimes(lastCloseTime, time, granToSeconds.S5);
   if (len < 30 || next) {
     console.log("call getCandles");
     await getCandles().then(() => {
@@ -202,29 +220,48 @@ async function updateMAs(data) {
 }
 
 async function checkCross() {
-  let a = MAs[1] - MAs[0];
-  if (a < 0) a = a * -1;
-
-  if (!makeOrder && a > makeOrderWaitLimit) makeOrder = true;
+  const len15 = MA15.length;
+  const len30 = MA30.length;
 
   let ret = 0;
 
-  if (lastMAs[0] < lastMAs[1] && MAs[0] > MAs[1]) {
+  if (MA15[len15 - 1] > MA30[len30 - 1] && MA15[len15 - 2] < MA30[len30 - 2])
     ret = 1;
-  } else if (lastMAs[0] > lastMAs[1] && MAs[0] < MAs[1]) {
+  else if (
+    MA15[len15 - 1] < MA30[len30 - 1] &&
+    MA15[len15 - 2] > MA30[len30 - 2]
+  )
     ret = -1;
-  }
-
   return ret;
 }
 
-async function setLots() {}
+const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
+const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
 
-async function testTrading() {
+async function setLots() {
+  let balance = getBalance();
+
+  for (let i = 0; i < 8; i++) {
+    if (balance < startBalance * balMuls[i] && Lots > startLots * lotMuls[i])
+      Lots = startLots * lotMuls[i];
+  }
+
+  for (let i = 0; i < 8; i++) {
+    if (
+      balance >= startBalance * balMuls[i] &&
+      Lots < startLots * lotMuls[i + 1]
+    )
+      Lots = startLots * lotMuls[i + 1];
+  }
+}
+
+async function trade(cross) {
   try {
+    if (cross === 0) return;
+    console.log("\t\t\t\tTRADE");
     await fx.orders.create({
       order: {
-        units: 1000000,
+        units: startUnits * cross,
         instrument: "EUR_USD",
         timeInForce: "FOK",
         type: "MARKET",
