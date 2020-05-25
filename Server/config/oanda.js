@@ -40,12 +40,11 @@ let lastMAs = [];
 let MA15 = [];
 let MA30 = [];
 let candleValues = [];
-let candleValues0 = [];
 let makeOrder = false;
 let makeOrderWaitLimit = 0.0007;
 let lastTicket;
 let startBalance = 100000;
-const startUnits = 1000000;
+let units = 1000000;
 const granularity = "M1";
 
 let isOnDataActive = false;
@@ -56,22 +55,17 @@ async function getBalance() {
 }
 
 async function runAlgorithm() {
-  /*await User.findOne().exec((err, r) => {
+  await User.findOne().exec((err, r) => {
     if (err) return console.log(err);
-    startBalance = r._account.balance;
-  });*/
-  const stream = await fx.pricing.stream({ instruments: "EUR_USD" });
+    console.log(r);
+    //startBalance = r._account.balance;
+  });
 
   startBalance = getBalance();
 
-  // Handle some data
-  stream.on("data", async (data) => {
-    if ((await isActiveTime()) && !isOnDataActive) {
-      //await onData(data);
-      setInterval(onData2, granToSeconds[granularity] * 1000);
-      stream.disconnect();
-    }
-  });
+  if ((await isActiveTime()) && !isOnDataActive) {
+    setInterval(onData, granToSeconds[granularity] * 100);
+  }
 }
 
 async function isActiveTime() {
@@ -84,31 +78,16 @@ async function isActiveTime() {
   return bool1 || bool2;
 }
 
-async function onData2() {
+async function onData() {
   await setLots();
   await updateMAs();
   const cross = await checkCross();
   await trade(cross);
 }
 
-async function onData(data) {
-  setTimeout(() => {
-    isOnDataActive = false;
-  }, 4000);
-  if (data.type === "PRICE") {
-    isOnDataActive = true;
-
-    await setLots();
-    await updateMAs();
-    const cross = await checkCross();
-    await trade(cross);
-  }
-}
-
 let inTrade = false;
 
 async function trade(cross) {
-  console.log("\t\t\t\ttrade ret: ", cross);
   if (cross === 0 || inTrade) return;
   setTimeout(() => {
     inTrade = false;
@@ -119,7 +98,7 @@ async function trade(cross) {
   try {
     await fx.orders.create({
       order: {
-        units: startUnits * cross,
+        units: units * cross,
         instrument: "EUR_USD",
         timeInForce: "FOK",
         type: "MARKET",
@@ -145,7 +124,6 @@ async function checkCross() {
     MA15[len15 - 2] > MA30[len30 - 2]
   )
     ret = -1;
-  console.log("\t\t\t\tret: ", ret);
   return ret;
 }
 
@@ -193,14 +171,13 @@ async function compareTimes(timeEarly, timeLater, difference = 0) {
   const time1_seconds = await timeToSeconds(timeEarly);
   const time2_seconds = await timeToSeconds(timeLater);
   const fullDay = 3600 * 23 + 60 * 59 + 59;
-  if (time1_seconds + difference > fullDay) return true;
-  return time1_seconds + difference < time2_seconds;
+  if (time1_seconds + difference >= fullDay) return true;
+  return time1_seconds + difference <= time2_seconds;
 }
 
 let lastCloseTime;
 
 async function getCandles() {
-  console.log("getCandles start");
   const url =
     "https://api-fxpractice.oanda.com/v3/accounts/101-004-13865294-001/instruments/EUR_USD/candles";
   return await axios
@@ -217,51 +194,29 @@ async function getCandles() {
       },
     })
     .then(async (response) => {
-      /*if (candleValues.length > 100) candleValues.shift;
-      const closeTime = response.data.candles[0].time;
+      const len = response.data.candles.length;
+      const nextCloseTime = response.data.candles[len - 1].time;
       const next = await compareTimes(
         lastCloseTime,
-        closeTime,
-        granToSeconds.S5
+        nextCloseTime,
+        granToSeconds[granularity]
       );
-      if (candleValues.length === 0 || true) {
-        let close = [];
-        parseFloat(response.data.candles[0].bid.c);
-        candleValues.push({
-          close: close,
-          time: closeTime,
-        });
-        candleValues0.push(close);
-        lastCloseTime = closeTime;
-        console.log(candleValues);
-      }*/
-
-      /*const firstCloseTime = response.data.candles[0].time;
-      const next = await compareTimes(
-        lastCloseTime,
-        firstCloseTime,
-        granToSeconds.M1
-      );
-      if (candleValues.length < 100 || next) {*/
-      for (let i = 0; i < response.data.candles.length; i++) {
-        lastCloseTime = response.data.candles[i].time;
-        const close = parseFloat(response.data.candles[i].bid.c);
-        candleValues[i] = {
-          close: close,
-          time: lastCloseTime,
-        };
-        candleValues0[i] = close;
+      if (!next) {
+        //await getCandles();
+        return false;
       }
-      //lastCloseTime = firstCloseTime;
-      console.log(lastCloseTime);
-      console.log(MA15);
-      console.log("getCandles end");
-      //}
+      for (let i = 0; i < len; i++) {
+        const close = parseFloat(response.data.candles[i].bid.c);
+        candleValues[i] = close;
+      }
+      lastCloseTime = nextCloseTime;
+      console.log(lastCloseTime, "\n");
+      return true;
     });
 }
 
 async function updateMAs() {
-  const len = candleValues0.length;
+  const len = candleValues.length;
   const time = new Date().toISOString();
   const next = await compareTimes(
     lastCloseTime,
@@ -269,14 +224,11 @@ async function updateMAs() {
     granToSeconds[granularity]
   );
   if (len < 30 || next) {
-    console.log("call getCandles");
-    await getCandles().then(() => {
-      console.log("getCandles return");
-      MA15 = SMA.calculate({ period: 15, values: candleValues0 });
-      MA30 = SMA.calculate({ period: 30, values: candleValues0 });
-      /*console.log(
-        "time:\t\t\t\t" + time + "\ndata.time:\t\t\t" + data.time + "\n"
-      );*/
+    await getCandles().then((active) => {
+      if (active) {
+        MA15 = SMA.calculate({ period: 15, values: candleValues });
+        MA30 = SMA.calculate({ period: 30, values: candleValues });
+      }
     });
   }
 }
