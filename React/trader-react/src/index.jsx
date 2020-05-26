@@ -4,6 +4,7 @@ import { MemoryRouter, Switch, Route } from "react-router-dom";
 import TraderNavbar from "./Components/TraderNavbar";
 import Dashboard from "./Components/Dashboard";
 import "bootstrap/dist/css/bootstrap.min.css";
+import * as serviceWorker from "./serviceWorker";
 
 class Trader extends Component {
   render() {
@@ -16,4 +17,11 @@ class Trader extends Component {
   }
 }
 
-ReactDOM.render(<Trader />, document.getElementById("root"));
+ReactDOM.render(
+  <React.StrictMode>
+    <Trader />
+  </React.StrictMode>,
+  document.getElementById("root")
+);
+
+serviceWorker.register();
