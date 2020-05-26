@@ -47,7 +47,8 @@ async function getAccountSummary() {
 async function getTransactions(size) {
   let trans = await fx.transactions();
   let lastID = trans.lastTransactionID;
-  let firstID = lastID - size + 1;
+  let firstID = lastID - 6 * size + 1;
+  if (firstID < 1) firstID = 1;
   const url = `https://api-fxpractice.oanda.com/v3/accounts/${account_id}/transactions/idrange`;
   return await axios
     .get(url, {
@@ -61,7 +62,12 @@ async function getTransactions(size) {
       },
     })
     .then(async (response) => {
-      return response.data.transactions;
+      let filtered = response.data.transactions.filter(
+        (t) => t.type === "ORDER_FILL" && t.pl !== "0.0000"
+      );
+      let length = filtered.length;
+      if (length > size) filtered.splice(0, length - size);
+      return filtered;
     })
     .catch(console.log);
 }

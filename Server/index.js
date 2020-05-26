@@ -5,7 +5,7 @@ const passport = require("passport");
 const session = require("express-session");
 const oanda = require("./config/oanda");
 
-const port = process.env.PORT || 3000;
+const port = 3001;
 
 const LocalStrategy = require("passport-local").Strategy;
 
@@ -30,6 +30,9 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 oanda.run();
+
+const cors = require("cors");
+app.use(cors());
 
 require("./routes")(app);
 
