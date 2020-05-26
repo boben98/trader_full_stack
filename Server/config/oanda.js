@@ -7,6 +7,7 @@ const SMA = require("technicalindicators").SMA;
 const axios = require("axios");
 
 let api_key;
+let account_id;
 
 const run = async () => {
   await User.find().exec(async (err, result) => {
@@ -26,10 +27,41 @@ async function setAccountID() {
   await fx
     .accounts()
     .then((a) => {
-      return a.accounts[0].id;
+      a.accounts.forEach((d) => {
+        //if (d.tags[0] == "HEDGING") ret = d.id;
+      });
+      account_id = "101-004-13865294-001";
+      return account_id;
     })
     .then(async (id) => {
       fx.setAccount(id);
+    })
+    .catch(console.log);
+}
+
+async function getAccountSummary() {
+  const account = (await fx.summary()).account;
+  return Account(account);
+}
+
+async function getTransactions(size) {
+  let trans = await fx.transactions();
+  let lastID = trans.lastTransactionID;
+  let firstID = lastID - size + 1;
+  const url = `https://api-fxpractice.oanda.com/v3/accounts/${account_id}/transactions/idrange`;
+  return await axios
+    .get(url, {
+      params: {
+        from: firstID,
+        to: lastID,
+      },
+      headers: {
+        contenttype: "application/json",
+        Authorization: `Bearer ${api_key}`,
+      },
+    })
+    .then(async (response) => {
+      return response.data.transactions;
     })
     .catch(console.log);
 }
@@ -94,18 +126,18 @@ async function trade(cross) {
   }, granToSeconds[granularity] * 10000);
   inTrade = true;
   console.log("\t\t\t\tTRADE");
-
+  const order = {
+    order: {
+      units: units * cross,
+      instrument: "EUR_USD",
+      timeInForce: "FOK",
+      type: "MARKET",
+      positionFill: "DEFAULT",
+      trailingStopLossOnFill: { distance: 0.0005 },
+    },
+  };
   try {
-    await fx.orders.create({
-      order: {
-        units: units * cross,
-        instrument: "EUR_USD",
-        timeInForce: "FOK",
-        type: "MARKET",
-        positionFill: "DEFAULT",
-        trailingStopLossOnFill: { distance: 0.0005 },
-      },
-    });
+    await fx.orders.create(order);
   } catch (err) {
     console.log(err);
   }
@@ -171,7 +203,7 @@ async function compareTimes(timeEarly, timeLater, difference = 0) {
   const time1_seconds = await timeToSeconds(timeEarly);
   const time2_seconds = await timeToSeconds(timeLater);
   const fullDay = 3600 * 23 + 60 * 59 + 59;
-  if (time1_seconds + difference >= fullDay) return true;
+  if (time1_seconds + difference > fullDay) return true;
   return time1_seconds + difference <= time2_seconds;
 }
 
@@ -189,8 +221,7 @@ async function getCandles() {
       },
       headers: {
         contenttype: "application/json",
-        Authorization:
-          "Bearer 70af9ed822af837a698d8ebd2c5e4e51-d822a044a57f89238dbfeabaddce0f17",
+        Authorization: `Bearer ${api_key}`,
       },
     })
     .then(async (response) => {
@@ -212,7 +243,8 @@ async function getCandles() {
       lastCloseTime = nextCloseTime;
       console.log(lastCloseTime, "\n");
       return true;
-    });
+    })
+    .catch(console.log);
 }
 
 async function updateMAs() {
@@ -274,7 +306,7 @@ async function testDataOptions() {
   console.log("Positions");
   console.log((await fx.positions()).positions);
   console.log("\n");
-
+  
   console.log("Transactions");
   console.log(await fx.transactions());
   console.log("\n");
@@ -291,8 +323,12 @@ async function testDataOptions() {
   fx.candles({ id: "EUR_USD" });
   const d = (await fx.candles({ id: "EUR_USD" })).candles;
   d.forEach((r) => {
-    console.log(r.mid.c);
+    // console.log(r.mid.c);
   });
 }
 
-run();
+module.exports = {
+  run: run,
+  getAccountSummary: getAccountSummary,
+  getTransactions: getTransactions,
+};

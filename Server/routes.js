@@ -1,7 +1,12 @@
 const db = require("./config/db");
 const User = require("./models/user");
 const Account = require("./models/account");
+const Order = require("./models/order");
 const passport = require("passport");
+const getUserMW = require("./middlewares/getUserMW");
+const getAccountMW = require("./middlewares/getAccountMW");
+const getTransactionsMW = require("./middlewares/getTransactionsMW");
+const setHeaderMW = require("./middlewares/setHeaderMW");
 
 let user = new User();
 
@@ -25,49 +30,15 @@ User.register(user, "password", (err, a) => {
 });*/
 
 module.exports = function (app) {
-  app.get("/", (req, res) => {
-    res.send("Hello world");
-  });
+  const objRepo = {
+    UserModel: User,
+    OrderModel: Order,
+    AccountModel: Account,
+  };
 
-  app.get("/login/authenticate", passport.authenticate("local"));
+  app.get("/transactions/:count", setHeaderMW(), getTransactionsMW(objRepo));
 
-  app.get("/login/forgotten", (req, res) => {
-    res.send("Hello world");
-  });
+  app.get("/account", setHeaderMW(), getAccountMW(objRepo));
 
-  app.get("/login", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.post("/register/save", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.get("/register", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.get("/logout", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.get("/user/account", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.get("/user/statistics", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.use("/user/settings/advanced", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.use("/user/settings", (req, res) => {
-    res.send("Hello world");
-  });
-
-  app.get("/user", (req, res) => {
-    res.send("Hello world");
-  });
+  app.get("/user", setHeaderMW(), getUserMW(objRepo));
 };

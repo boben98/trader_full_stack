@@ -5,21 +5,19 @@ const Account = db.model("Account", {
   currency: String,
   balance: Number,
   equity: Number,
-  margin: Number,
-  free_margin: Number,
-  margin_level: Number,
+  marginAvailable: Number,
+  marginUsed: Number,
+  marginRate: Number,
+  pl: Number,
+  openPositionCount: Number,
   _orders: {
     type: [Schema.Types.ObjectId],
-    ref: "Order"
+    ref: "Order",
   },
   _user: {
-    type: [Schema.Types.ObjectId],
-    ref: "User"
+    type: Schema.Types.ObjectId,
+    ref: "User",
   },
-  _algo: {
-    type: [Schema.Types.ObjectId],
-    ref: "Algo"
-  }
 });
 
 module.exports = Account;

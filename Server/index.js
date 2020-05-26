@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const session = require("express-session");
+const oanda = require("./config/oanda");
 
 const port = process.env.PORT || 3000;
 
@@ -28,7 +29,7 @@ passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-require("./config/oanda");
+oanda.run();
 
 require("./routes")(app);
 
