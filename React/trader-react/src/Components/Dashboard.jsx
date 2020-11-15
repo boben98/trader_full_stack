@@ -46,14 +46,14 @@ class Dashboard extends Component {
           return {
             id: tran.id,
             instrument: tran.instrument,
-            time: `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes()}`,
+            time: `${date.toLocaleDateString()} ${date.getHours()}:${date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})}`,
             tranType: tran.units > 0 ? "BUY" : "SELL",
             profit: tran.pl,
           };
         });
         this.setState({
           transactionsLastWeek: count,
-          transactions: trans,
+          transactions: trans.reverse(),
         });
         console.log("Tran ", this.state);
       });
