@@ -7,6 +7,10 @@ const User = new Schema({
   email: String,
   phone: Number,
   oanda_api_key: String,
+  _algo: {
+    type: Schema.Types.ObjectId,
+    ref: "Algo"
+  },
   _account: {
     type: Schema.Types.ObjectId,
     ref: "Account"

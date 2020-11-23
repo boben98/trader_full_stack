@@ -6,7 +6,7 @@ module.exports = (objRepo) => {
       if (err) return console.log(err);
       res.json(result);
     });*/
-    oanda.getTransactions(req.params.count).then((value) => {
+    oanda.getTransactions(req.params.count, req.user.username).then((value) => {
       res.json(value);
     });
   };
