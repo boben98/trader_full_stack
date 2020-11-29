@@ -40,12 +40,6 @@ async function addUsers() {
     if (err) {
       console.log(err);
     }
-
-    user.save((err2) => {
-      if (err2) {
-        console.log(err2);
-      }
-    });
   });
 
   let user2 = new User();
@@ -78,12 +72,6 @@ async function addUsers() {
     if (err) {
       console.log(err);
     }
-
-    user2.save((err2) => {
-      if (err2) {
-        console.log(err2);
-      }
-    });
   });
 }
 
@@ -134,6 +122,25 @@ async function fxConfig(username) {
   //const account = (await fx.summary()).account;
   //console.log(account);
   //testDataOptions();
+}
+
+async function updateUserArray(username) {
+  await User.find({ username: username })
+    .populate("_account")
+    .populate("_algo")
+    .exec(async (err, result) => {
+      if (err) return console.log(err);
+      await result.forEach(async (u) => {
+        let un = u.username;
+        user[un] = u;
+        user[un].inTrade = false;
+        user[un].MA1 = [];
+        user[un].MA2 = [];
+        user[un].candleValues = [];
+        user[un].account = u._account;
+        user[un].algo = u._algo;
+      });
+    });
 }
 
 const run = async () => {
@@ -467,4 +474,5 @@ module.exports = {
   run: run,
   getAccountSummary: getAccountSummary,
   getTransactions: getTransactions,
+  update: updateUserArray,
 };

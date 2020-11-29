@@ -1,10 +1,5 @@
-module.exports = (objRepo) => {
-  const User = objRepo.UserModel;
+module.exports = () => {
   return (req, res) => {
-    User.findOne().exec((err, result) => {
-      if (err) return console.log(err);
-      console.log(result);
-      res.json(result);
-    });
+    return res.json(req.user);
   };
 };

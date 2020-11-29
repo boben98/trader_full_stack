@@ -11,6 +11,7 @@ module.exports = (objRepo) => {
         name: res.locals.user.name,
         email: res.locals.user.email,
         phone: res.locals.user.phone,
+        oanda_api_key: res.locals.user.oanda_api_key,
       };
     } else {
       fields = {
@@ -18,6 +19,7 @@ module.exports = (objRepo) => {
         name: res.locals.user.name,
         email: res.locals.user.email,
         phone: res.locals.user.phone,
+        oanda_api_key: res.locals.user.oanda_api_key,
         salt: res.locals.user.salt,
         hash: res.locals.user.hash,
       };
@@ -31,14 +33,17 @@ module.exports = (objRepo) => {
         new: true,
       },
       (err, res) => {
-        if (err) return res.status(500).json({ message: "User update failed" });
+        if (err)
+          return res
+            .status(500)
+            .json({ message: "User update failed", error: err });
+        if (res) return res.json({ message: "User update successful" });
+        return res.status(500).json({ message: "User update failed" });
       }
     );
 
-    req.login(res.locals.user, (err) => {
+    /*req.login(res.locals.user, (err) => {
       if (err) return res.status(500).json({ message: "User login failed" });
-    });
-
-    return res.json({ message: "User update succesful" });
+    });*/
   };
 };

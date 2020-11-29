@@ -8,7 +8,6 @@ const getUserMW = require("./middlewares/getUserMW");
 const getAccountMW = require("./middlewares/getAccountMW");
 const getTransactionsMW = require("./middlewares/getTransactionsMW");
 const setHeaderMW = require("./middlewares/setHeaderMW");
-const authMW = require("./middlewares/auth/authMW");
 const registerMW = require("./middlewares/auth/registerMW");
 const loginMW = require("./middlewares/auth/loginMW");
 const logoutMW = require("./middlewares/auth/logoutMW");
@@ -19,23 +18,20 @@ const updateUserDataMW = require("./middlewares/updateUserDataMW");
 module.exports = function (app) {
   const objRepo = {
     UserModel: User,
-    OrderModel: Order,
+    AlgoModel: Algo,
     AccountModel: Account,
   };
 
-  app.get(
-    "/transactions/:count",
-    authMW(objRepo),
-    setHeaderMW(),
-    getTransactionsMW(objRepo)
-  );
-  app.get("/account", authMW(objRepo), setHeaderMW(), getAccountMW(objRepo));
-  app.get("/user", authMW(objRepo), setHeaderMW(), getUserMW(objRepo));
+  const authMW = passport.authenticate("jwt", { session: false });
 
-  app.post("/login", loginMW(objRepo));
-  app.get("/logout", authMW(objRepo), logoutMW());
-  app.post("/register", registerMW(objRepo));
-  app.post(
+  app.get("/transactions/:count", authMW, setHeaderMW(), getTransactionsMW());
+  app.get("/account", authMW, setHeaderMW(), getAccountMW());
+  app.get("/user", authMW, setHeaderMW(), getUserMW());
+
+  app.use("/login", loginMW());
+  app.get("/logout", authMW, logoutMW());
+  app.use("/register", registerMW(objRepo));
+  app.use(
     "/forgotten",
     sendEmailMW(),
     setPasswordMW(objRepo),
