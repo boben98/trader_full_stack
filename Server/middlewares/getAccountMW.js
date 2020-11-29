@@ -1,6 +1,6 @@
 const oanda = require("../config/oanda");
 
-module.exports = (objRepo) => {
+module.exports = () => {
   return (req, res) => {
     /*Account.findOne().exec((err, result) => {
       if (err) return console.log(err);
