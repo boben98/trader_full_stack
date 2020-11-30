@@ -94,22 +94,6 @@ const granToSeconds = {
 const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
 const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
 
-function setIntervalX(cb, delay, rep) {
-  var x = 0;
-  var i = setInterval(() => {
-    cb();
-    if (++x === rep) {
-      clearInterval(i);
-    }
-  }, delay);
-}
-
-function createInterval(cb, param, interval) {
-  setInterval(function () {
-    cb(param);
-  }, interval);
-}
-
 async function fxConfig(username) {
   console.log("config: " + username);
   try {
@@ -118,10 +102,6 @@ async function fxConfig(username) {
   } catch (err) {
     console.log(err);
   }
-
-  //const account = (await fx.summary()).account;
-  //console.log(account);
-  //testDataOptions();
 }
 
 async function updateUserArray(username) {
@@ -159,10 +139,6 @@ const run = async () => {
         user[un].candleValues = [];
         user[un].account = u._account;
         user[un].algo = u._algo;
-
-        //await setAccountID();
-        //await testDataOptions();
-        //await testTrading();
       });
       await runAlgorithm();
     });
@@ -233,12 +209,12 @@ async function runAlgorithm() {
   keys.forEach(async (username) => {
     user[username].startBalance = await getBalance(username);
     user[username].startUnits = user[username].algo.units;
+    //await testDataOptions(username);
     setInterval(
       onData,
       granToSeconds[user[username].algo.granularity] * 200,
       username
     );
-    //createInterval(onData, username, granToSeconds[user[username].algo.granularity] * 200)
   });
 }
 
@@ -425,7 +401,7 @@ async function getCandles(username) {
     .catch(console.log);
 }
 
-async function testDataOptions() {
+async function testDataOptions(username) {
   console.log("Summary");
   let a = (await fx.summary()).account;
   console.log(a);
@@ -458,9 +434,12 @@ async function testDataOptions() {
   console.log(await fx.pricing({ instruments: "EUR_USD" }));
   console.log("\n");
 
+  */
+  await fxConfig(username);
   console.log("Candles");
   console.log((await fx.candles({ id: "EUR_USD" })).candles);
   console.log("\n");
+  /*
 
   console.log("Close prices");
   fx.candles({ id: "EUR_USD" });
