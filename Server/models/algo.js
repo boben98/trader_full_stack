@@ -18,6 +18,10 @@ const Algo = db.model("Algo", {
     type: Number,
     default: 1000000,
   },
+  marginRatio: {
+    type: Number,
+    default: 30,
+  },
   trailValue: {
     type: Number,
     default: 0.0005,

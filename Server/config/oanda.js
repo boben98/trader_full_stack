@@ -5,6 +5,8 @@ const Account = require("../models/account");
 const Algo = require("../models/algo");
 const SMA = require("technicalindicators").SMA;
 const axios = require("axios");
+const compareTimes = require("../timeHandler").compareTimes;
+const granToSeconds = require("../timeHandler").granToSeconds;
 
 let user = {};
 
@@ -75,7 +77,7 @@ async function addUsers() {
   });
 }
 
-const granToSeconds = {
+/*const granToSeconds = {
   S5: 5,
   S10: 10,
   S15: 15,
@@ -89,7 +91,7 @@ const granToSeconds = {
   M30: 1800,
   H1: 3600,
   H2: 7200,
-};
+};*/
 
 const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
 const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
@@ -336,7 +338,7 @@ async function trade(cross, username) {
   }
 }
 
-async function compareTimes(timeEarly, timeLater, difference = 0) {
+/*async function compareTimes(timeEarly, timeLater, difference = 0) {
   //assuming the same day
   if (typeof timeEarly === "undefined") return true;
   /*const time1_seconds = await roundDown(
@@ -346,7 +348,7 @@ async function compareTimes(timeEarly, timeLater, difference = 0) {
   const time2_seconds = await roundDown(
     await timeToSeconds(timeLater),
     difference
-  );*/
+  );
 
   const time1_seconds = await timeToSeconds(timeEarly);
   const time2_seconds = await timeToSeconds(timeLater);
@@ -362,7 +364,7 @@ async function timeToSeconds(time) {
     parseInt(time1.substring(3, 5)) * 60 +
     parseInt(time1.substring(6))
   );
-}
+}*/
 
 async function getCandles(username) {
   const url = `https://api-fxpractice.oanda.com/v3/accounts/${user[username].account.accountId}/instruments/${user[username].algo.instrument}/candles`;

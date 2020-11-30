@@ -4,24 +4,27 @@ const User = require("./models/user");
 const Algo = require("./models/algo");
 const Account = require("./models/account");
 const SMA = require("technicalindicators").SMA;
+const compareTimes = require("./timeHandler").compareTimes;
+const granToSeconds = require("./timeHandler").granToSeconds;
 
 let user = new User();
-let candles;
 
 async function runBacktest({ account, algo, timeframe }) {
-  //account = {currency, balance}
   user.account = account;
   user.algo = algo;
   user.timeframe = timeframe;
   user.orders = [];
+  user.allOrders = [];
   user.candles = {};
   user.MA1 = [];
   user.MA2 = [];
   user.startBalance = user.account.balance;
+  user.margin = user.account.balance;
   await getAllCandles();
-  await runAlgorithm();
+  return await runAlgorithm();
 }
-let algo = {
+
+/*let algo = {
   instrument: "EUR_HUF",
   MAperiod1: 15,
   MAperiod2: 30,
@@ -29,7 +32,7 @@ let algo = {
 
 user.algo = algo;
 
-getAllCandles();
+getAllCandles();*/
 
 async function getAllCandles() {
   const url = `https://api-fxpractice.oanda.com/v3/instruments/${user.algo.instrument}/candles`;
@@ -37,9 +40,9 @@ async function getAllCandles() {
     .get(url, {
       params: {
         price: "AB",
-        from: "2014-06-20T17:00:00.000000Z", //user.timeframe.from.toISOString(),
-        to: "2014-06-28T17:00:00.000000Z", //user.timeframe.to.toISOString(),
-        granularity: "H1", //user.algo.granularity,
+        from: user.timeframe.from.toISOString(),
+        to: user.timeframe.to.toISOString(),
+        granularity: user.algo.granularity,
       },
       headers: {
         "Content-Type": "application/json",
@@ -87,10 +90,15 @@ async function runAlgorithm() {
       await setLots();
       const cross = await checkCross(i);
       await trade(cross, i);
+      await checkForClose(i);
     } catch (err) {
       console.log(err);
     }
   }
+  return {
+    orders: user.allOrders,
+    difference: user.account.balance - user.startBalance,
+  };
 }
 
 const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
@@ -133,54 +141,73 @@ async function checkCross(index) {
 }
 
 async function trade(cross, i) {
-  if (cross === 0) return;
+  if (cross === 0 || user.margin < user.algo.units / user.algo.marginRatio)
+    return;
   const order = {
     units: user.algo.units * cross,
     instrument: user.algo.instrument,
     trailValue: user.algo.trailValue,
     candle: user.candles[i],
   };
-  orders.push(order);
+  let stop =
+    order.units > 0
+      ? user.candles[i].bid.c - order.trailValue
+      : user.candles[i].ask.c + order.trailValue;
+  order.stopLoss = stop;
+  user.orders.push(order);
+  user.allOrders.push(order);
+  user.margin -= order.units / user.algo.marginRatio;
 }
 
-/*void TrailingStop();
-{
-  let res;
-  res = OrderSelect(ticket, SELECT_BY_TICKET);
+async function trailingStop(order, i) {
+  if (order) {
+    if (
+      (compareTimes(order.candle.time),
+      new Date().toISOString,
+      granToSeconds[user.algo.granularity] * user.algo.trailWait)
+    )
+      if (order.units > 0) {
+        //return;
 
-  if (res) {
-    if (TimeCurrent() - OrderOpenTime() < PeriodSeconds() * TrailWait) return;
-    if (OrderType() == OP_BUY) {
-      if (Bid - OrderStopLoss() > TrailValue * Point()) {
-        //adjust stop loss if it is too far
-        res = OrderModify(
-          OrderTicket(),
-          OrderOpenPrice(),
-          Bid - TrailValue * Point(),
-          OrderTakeProfit(),
-          0
-        );
-        if (!res) {
-          Alert("TrailingStop OrderModify Error: ", GetLastError());
+        if (user.candles[i].bid.c - order.stopLoss > order.trailValue) {
+          //adjust stop loss if it is too far
+          order.stopLoss = user.candles[i].bid.c - order.trailValue;
+        }
+      } else if (order.units < 0) {
+        if (order.stopLoss - user.candles[i].ask.c > order.trailValue) {
+          //adjust stop loss if it is too far
+          order.stopLoss = user.candles[i].ask.c + order.trailValue;
         }
       }
-    } else if (OrderType() == OP_SELL) {
-      if (OrderStopLoss() - Ask > TrailValue * Point()) {
-        //adjust stop loss if it is too far
-        res = OrderModify(
-          OrderTicket(),
-          OrderOpenPrice(),
-          Ask + TrailValue * Point(),
-          OrderTakeProfit(),
-          0
-        );
-        if (!res) {
-          Alert("TrailingStop OrderModify Error: ", GetLastError());
-        }
+  }
+}
+
+async function checkForClose(i) {
+  if (user.orders.length === 0) return;
+  user.orders.forEach((order) => {
+    let diff;
+    if (order.units > 0) {
+      if (user.candles[i].bid.l <= order.stopLoss) {
+        let pipDiff = user.candles[i].bid.c - order.candle.ask.c;
+
+        diff = (Math.abs(order.units) * diff * 10000) / user.candles[i].bid.c;
+      }
+    } else if (order.units < 0) {
+      if (user.candles[i].ask.h >= order.stopLoss) {
+        let pipDiff = order.candle.bid.c - user.candles[i].ask.c;
+        diff = (Math.abs(order.units) * diff * 10000) / user.candles[i].ask.c;
       }
     }
-  }
-}*/
+
+    if (diff) {
+      user.account.balance += diff;
+      user.margin += order.units / user.algo.marginRatio + diff;
+      for (let i = 0; i < user.orders.length; i++) {
+        if (user.orders[i] === order) user.orders.splice(i, 1);
+      }
+    } else trailingStop(order, i);
+  });
+}
 
 module.exports = {
   run: runBacktest,
