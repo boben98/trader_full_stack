@@ -14,6 +14,7 @@ const logoutMW = require("./middlewares/auth/logoutMW");
 const sendEmailMW = require("./middlewares/auth/sendEmailMW");
 const setPasswordMW = require("./middlewares/setPasswordMW");
 const updateUserDataMW = require("./middlewares/updateUserDataMW");
+const backtestMW = require("./middlewares/backtestMW");
 
 module.exports = function (app) {
   const objRepo = {
@@ -27,6 +28,7 @@ module.exports = function (app) {
   app.get("/transactions/:count", authMW, setHeaderMW(), getTransactionsMW());
   app.get("/account", authMW, setHeaderMW(), getAccountMW());
   app.get("/user", authMW, setHeaderMW(), getUserMW());
+  app.get("/backtest", backtestMW());
 
   app.use("/login", loginMW());
   app.get("/logout", authMW, logoutMW());

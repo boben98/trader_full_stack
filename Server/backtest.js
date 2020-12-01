@@ -1,27 +1,25 @@
 const oanda = require("./config/oanda");
 const axios = require("axios");
 const User = require("./models/user");
-const Algo = require("./models/algo");
-const Account = require("./models/account");
 const SMA = require("technicalindicators").SMA;
 const compareTimes = require("./timeHandler").compareTimes;
 const granToSeconds = require("./timeHandler").granToSeconds;
 
 let user = new User();
 
-async function runBacktest({ account, algo, timeframe }) {
-  user.account = account;
+async function runBacktest(balance, algo, timeframe) {
+  user.balance = balance;
   user.algo = algo;
   user.timeframe = timeframe;
   user.orders = [];
   user.allOrders = [];
-  user.candles = {};
+  user.candles = [];
   user.MA1 = [];
   user.MA2 = [];
-  user.startBalance = user.account.balance;
-  user.margin = user.account.balance;
-  await getAllCandles();
-  return await runAlgorithm();
+  user.startBalance = user.balance;
+  user.margin = user.balance;
+  return getAllCandles().then(() => runAlgorithm());
+  //return runAlgorithm();
 }
 
 /*let algo = {
@@ -34,14 +32,62 @@ user.algo = algo;
 
 getAllCandles();*/
 
-async function getAllCandles() {
+function getAllCandles() {
+  return new Promise(async (resolve, reject) => {
+    let allMilliSeconds = user.timeframe.to - user.timeframe.from;
+    user.candleCount =
+      allMilliSeconds / 1000 / granToSeconds[user.algo.granularity];
+    let candles5000 = granToSeconds[user.algo.granularity] * 1000 * 5000;
+    let times = [];
+    times.push(user.timeframe.from);
+
+    if (user.candleCount > 5000) {
+      for (let i = candles5000; i < allMilliSeconds; i += candles5000) {
+        times.push(new Date(user.timeframe.from.getTime() + i));
+      }
+    }
+
+    times.push(user.timeframe.to);
+
+    for (let i = 0; i < times.length - 1; i++)
+      await getCandles(times[i], times[i + 1]);
+
+    const len = user.candles.length;
+    let candleValues = [];
+    for (let i = 0; i < len; i++) {
+      const close = parseFloat(user.candles[i].bid.c);
+      candleValues[i] = close;
+    }
+
+    let MA1 = await SMA.calculate({
+      period: user.algo.MAperiod1,
+      values: candleValues,
+    });
+    let MA2 = await SMA.calculate({
+      period: user.algo.MAperiod2,
+      values: candleValues,
+    });
+    for (
+      let i = 0;
+      i < len && MA1[MA1.length - 2 - i] && MA2[MA2.length - 2 - i];
+      i++
+    ) {
+      user.candles[len - 1 - i].MA1 = MA1[MA1.length - 2 - i];
+      user.candles[len - 1 - i].MA2 = MA2[MA2.length - 2 - i];
+    }
+    console.log(user.candles);
+    resolve();
+  });
+}
+
+async function getCandles(from, to) {
   const url = `https://api-fxpractice.oanda.com/v3/instruments/${user.algo.instrument}/candles`;
   return await axios
     .get(url, {
       params: {
         price: "AB",
-        from: user.timeframe.from.toISOString(),
-        to: user.timeframe.to.toISOString(),
+        from: from.toISOString(),
+        to: to.toISOString(),
         granularity: user.algo.granularity,
       },
       headers: {
@@ -49,63 +95,40 @@ async function getAllCandles() {
         Authorization: `Bearer 5d982a2b544425e8783646142d4b2a83-53d7111b51f1dc94ee16084aa98c6692`,
       },
     })
-    .then(async (response) => {
-      user.candles = response.data.candles;
-      const len = response.data.candles.length;
-      let candleValues = [];
-      for (let i = 0; i < len; i++) {
-        const close = parseFloat(response.data.candles[i].bid.c);
-        candleValues[i] = close;
-      }
-      let MA1 = SMA.calculate({
-        period: user.algo.MAperiod1,
-        values: candleValues,
-      });
-      let MA2 = SMA.calculate({
-        period: user.algo.MAperiod2,
-        values: candleValues,
-      });
-      for (
-        let i = 0;
-        i < len && MA1[MA1.length - 2 - i] && MA2[MA2.length - 2 - i];
-        i++
-      ) {
-        user.candles[len - 1 - i].MA1 = MA1[MA1.length - 2 - i];
-        user.candles[len - 1 - i].MA2 = MA2[MA2.length - 2 - i];
-      }
-      console.log(user.candles);
+    .then((response) => {
+      user.candles = user.candles.concat(response.data.candles);
     })
     .catch(console.log);
 }
 
-async function runAlgorithm() {
+function runAlgorithm() {
   for (
-    let i = 0;
+    let i = user.algo.MAperiod2 + 1;
     i < user.candles.length &&
-    user.candles[i - 1].MA1 &&
-    user.candles[i - 1].MA2;
+    typeof user.candles[i - 1].MA1 !== "undefined" &&
+    typeof user.candles[i - 1].MA2 !== "undefined";
     i++
   ) {
     try {
-      await setLots();
-      const cross = await checkCross(i);
-      await trade(cross, i);
-      await checkForClose(i);
+      setLots();
+      const cross = checkCross(i);
+      trade(cross, i);
+      checkForClose(i);
     } catch (err) {
       console.log(err);
     }
   }
   return {
     orders: user.allOrders,
-    difference: user.account.balance - user.startBalance,
+    PL: user.balance - user.startBalance,
   };
 }
 
 const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
 const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
 
-async function setLots() {
-  let balance = user.account.balance;
+function setLots() {
+  let balance = user.balance;
 
   for (let i = 0; i < 8; i++) {
     if (
@@ -124,23 +147,23 @@ async function setLots() {
   }
 }
 
-async function checkCross(index) {
+function checkCross(index) {
   let ret = 0;
 
   if (
     user.candles[index].MA1 >= user.candles[index].MA2 &&
-    user.candles[index - 1].MA1 < candles[index - 1].MA2
+    user.candles[index - 1].MA1 < user.candles[index - 1].MA2
   )
     ret = 1;
   else if (
     user.candles[index].MA1 <= user.candles[index].MA2 &&
-    user.candles[index - 1].MA1 > candles[index - 1].MA2
+    user.candles[index - 1].MA1 > user.candles[index - 1].MA2
   )
     ret = -1;
   return ret;
 }
 
-async function trade(cross, i) {
+function trade(cross, i) {
   if (cross === 0 || user.margin < user.algo.units / user.algo.marginRatio)
     return;
   const order = {
@@ -159,26 +182,27 @@ async function trade(cross, i) {
   user.margin -= order.units / user.algo.marginRatio;
 }
 
-async function trailingStop(order, i) {
+function trailingStop(order, i) {
   if (order) {
     if (
-      (compareTimes(order.candle.time),
-      new Date().toISOString,
-      granToSeconds[user.algo.granularity] * user.algo.trailWait)
+      compareTimes(
+        user.allOrders[user.orders.length - 1].candle.time,
+        order.candle.time,
+        granToSeconds[user.algo.granularity] * user.algo.trailWait
+      )
     )
-      if (order.units > 0) {
-        //return;
-
-        if (user.candles[i].bid.c - order.stopLoss > order.trailValue) {
-          //adjust stop loss if it is too far
-          order.stopLoss = user.candles[i].bid.c - order.trailValue;
-        }
-      } else if (order.units < 0) {
-        if (order.stopLoss - user.candles[i].ask.c > order.trailValue) {
-          //adjust stop loss if it is too far
-          order.stopLoss = user.candles[i].ask.c + order.trailValue;
-        }
+      return;
+    if (order.units > 0) {
+      if (user.candles[i].bid.c - order.stopLoss > order.trailValue) {
+        //adjust stop loss if it is too far
+        order.stopLoss = user.candles[i].bid.c - order.trailValue;
       }
+    } else if (order.units < 0) {
+      if (order.stopLoss - user.candles[i].ask.c > order.trailValue) {
+        //adjust stop loss if it is too far
+        order.stopLoss = user.candles[i].ask.c + order.trailValue;
+      }
+    }
   }
 }
 
@@ -189,21 +213,26 @@ async function checkForClose(i) {
     if (order.units > 0) {
       if (user.candles[i].bid.l <= order.stopLoss) {
         let pipDiff = user.candles[i].bid.c - order.candle.ask.c;
-
-        diff = (Math.abs(order.units) * diff * 10000) / user.candles[i].bid.c;
+        diff = (Math.abs(order.units) * pipDiff) / user.candles[i].bid.c;
       }
     } else if (order.units < 0) {
       if (user.candles[i].ask.h >= order.stopLoss) {
         let pipDiff = order.candle.bid.c - user.candles[i].ask.c;
-        diff = (Math.abs(order.units) * diff * 10000) / user.candles[i].ask.c;
+        diff = (Math.abs(order.units) * pipDiff) / user.candles[i].ask.c;
       }
     }
 
     if (diff) {
-      user.account.balance += diff;
+      user.balance += diff;
       user.margin += order.units / user.algo.marginRatio + diff;
-      for (let i = 0; i < user.orders.length; i++) {
-        if (user.orders[i] === order) user.orders.splice(i, 1);
+      for (let j = 0; j < user.orders.length; j++) {
+        if (user.orders[j] === order) user.orders.splice(j, 1);
+      }
+      for (let j = 0; j < user.allOrders.length; j++) {
+        if (user.allOrders[j] === order) {
+          user.allOrders[j].closeCandle = user.candles[i];
+          user.allOrders[j].PL = diff;
+        }
       }
     } else trailingStop(order, i);
   });

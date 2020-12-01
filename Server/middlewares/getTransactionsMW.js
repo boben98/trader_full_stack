@@ -1,4 +1,4 @@
-const oanda = require("../oanda/oanda");
+const oanda = require("../config/oanda");
 
 module.exports = () => {
   return (req, res) => {

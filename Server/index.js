@@ -3,7 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const session = require("express-session");
-const oanda = require("./oanda/oanda");
+const oanda = require("./config/oanda");
 const MongoStore = require("connect-mongo")(session);
 const User = require("./models/user");
 
