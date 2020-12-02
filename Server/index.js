@@ -40,6 +40,8 @@ passport.use(
     },
     function (jwtPayload, done) {
       return User.findById(jwtPayload.id)
+        .populate("_account")
+        .populate("_algo")
         .then((user) => {
           return done(null, user);
         })

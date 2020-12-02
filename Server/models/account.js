@@ -11,14 +11,6 @@ const Account = db.model("Account", {
   marginRate: Number,
   pl: Number,
   openPositionCount: Number,
-  _orders: {
-    type: [Schema.Types.ObjectId],
-    ref: "Order",
-  },
-  _user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
 });
 
 module.exports = Account;

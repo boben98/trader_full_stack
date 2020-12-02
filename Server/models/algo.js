@@ -28,7 +28,7 @@ const Algo = db.model("Algo", {
   },
   trailWait: {
     type: Number,
-    default: 475,
+    default: 3,
   },
   makeOrderWaitLimit: {
     type: Number,

@@ -6,7 +6,7 @@ module.exports = () => {
       if (err) return console.log(err);
       res.json(result);
     });*/
-    oanda.getAccountSummary(req.user.username).then((value) => {
+    oanda.getAccountSummary(res.locals.user.username).then((value) => {
       res.json(value);
     });
   };
