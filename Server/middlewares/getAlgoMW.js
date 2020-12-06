@@ -1,5 +1,5 @@
 module.exports = () => {
   return (req, res) => {
-    return res.json(res.locals.user.algo);
+    return res.json(req.user._algo);
   };
 };

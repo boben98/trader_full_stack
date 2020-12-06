@@ -120,7 +120,7 @@ function runAlgorithm() {
   }
   return {
     orders: user.allOrders,
-    PL: user.balance - user.startBalance,
+    profit: user.balance - user.startBalance,
   };
 }
 
@@ -231,7 +231,7 @@ async function checkForClose(i) {
       for (let j = 0; j < user.allOrders.length; j++) {
         if (user.allOrders[j] === order) {
           user.allOrders[j].closeCandle = user.candles[i];
-          user.allOrders[j].PL = diff;
+          user.allOrders[j].profit = diff;
         }
       }
     } else trailingStop(order, i);

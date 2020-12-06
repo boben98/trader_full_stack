@@ -8,7 +8,6 @@ module.exports = (objRepo) => {
   const Algo = objRepo.AlgoModel;
 
   return (req, res, next) => {
-    if (req.isAuthenticated()) return next();
     if (
       typeof req.body.name === "undefined" ||
       typeof req.body.email === "undefined" ||
@@ -84,7 +83,7 @@ module.exports = (objRepo) => {
           );
           return res.json({ user: user.username, token });
         });
-        //oanda.update(user.username);
+        oanda.update();
       })(req, res);
     });
   };

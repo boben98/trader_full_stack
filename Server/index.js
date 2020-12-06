@@ -9,6 +9,9 @@ const User = require("./models/user");
 
 const port = 3001;
 
+const cors = require("cors");
+app.use(cors());
+
 const LocalStrategy = require("passport-local").Strategy;
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -56,15 +59,12 @@ app.use((err, req, res, next) => {
   console.log(err);
 });
 
-app.use((req, res, next) => {
+/*app.use((req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   next();
-});
+});*/
 
 oanda.run();
-
-const cors = require("cors");
-app.use(cors());
 
 require("./routes")(app);
 

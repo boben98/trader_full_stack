@@ -10,20 +10,44 @@ import Settings from "./Components/Settings";
 import Profile from "./Components/Profile";
 import "bootstrap/dist/css/bootstrap.min.css";
 import * as serviceWorker from "./serviceWorker";
+import Backtest from "./Components/Backtest";
 
 class Trader extends Component {
+  constructor() {
+    super();
+    const ls = JSON.parse(localStorage.getItem('token'));
+    if (ls === null) this.setState({token: ""});
+    else if (typeof ls.token === "undefined") this.setState({token: ""});
+    else {
+      //const token = localStorage.getItem('token').token;
+      this.setState(ls);
+    }
+  }  
+  state = JSON.parse(localStorage.getItem('token')) !== null ? JSON.parse(localStorage.getItem('token')) : {token: ""} ;
+
+  setToken = (token) => {
+    localStorage.setItem('token', JSON.stringify({token: token}));
+    this.setState({token: token});
+  };
+  
+  logout = () => {
+    this.setState({token: ""});
+    localStorage.clear();
+  }
+
   render() {
     return (
       <Router>
         <div className="container">
-          <TraderNavbar />
+          <TraderNavbar token={this.state.token} logout={this.logout}/>
           <Switch>
-            <Route exact path="/" component={Login} />  {/* /login */}
+            <Route exact path="/" render={ (props) => <Login {...props} setToken = {this.setToken} /> } />  {/* /login */}
             <Route exact path="/forgotten" component={Forgotten} /> {/* /forgotten */}
-            <Route exact path="/register" component={Register} /> {/* /register */}
-            <Route exact path="/dashboard" component={Dashboard} /> {/* /transactions, /account */}
-            <Route exact path="/settings" component={Settings} /> {/* /user, /algo /backtest*/}
-            <Route exact path="/profile" component={Profile}/> {/* /user, /account */}            
+            <Route exact path="/register" render={ (props) => <Register {...props} token={this.state.token} /> } /> {/* /register */}
+            <Route exact path="/dashboard" render={ (props) => <Dashboard {...props} token={this.state.token} /> } /> {/* /transactions, /account */}
+            <Route exact path="/settings" render={ (props) => <Settings {...props} token={this.state.token} /> } /> {/* /user, /algo */}
+            <Route exact path="/backtest" render={ (props) => <Backtest {...props} token={this.state.token} /> } /> {/* /backtest */}
+            <Route exact path="/profile" render={ (props) => <Profile {...props} token={this.state.token} /> }/> {/* /user, /account */}            
           </Switch>
         </div>
       </Router>

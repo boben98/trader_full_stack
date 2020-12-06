@@ -26,14 +26,18 @@ module.exports = function (app) {
   };
 
   const authMW = passport.authenticate("jwt", { session: false });
+  const log = (req, res, next) => {
+    console.log(req);
+    next();
+  };
 
   app.get("/transactions/:count", authMW, setHeaderMW(), getTransactionsMW());
-  app.get("/account", authMW, setHeaderMW(), getAccountMW());
+  app.get("/account", log, authMW, setHeaderMW(), getAccountMW());
   app.get("/algo", authMW, setHeaderMW(), getAlgoMW());
-  app.post("/algo/save", authMW, setHeaderMW(), updateAlgoMW());
+  app.post("/algo/save", authMW, setHeaderMW(), updateAlgoMW(objRepo));
   app.get("/user", authMW, setHeaderMW(), getUserMW());
-  app.post("/user/save", authMW, setHeaderMW(), updateUserMW());
-  app.get("/backtest", backtestMW());
+  app.post("/user/save", authMW, setHeaderMW(), updateUserMW(objRepo));
+  app.use("/backtest", authMW, backtestMW());
 
   app.use("/login", loginMW());
   app.get("/logout", authMW, logoutMW());

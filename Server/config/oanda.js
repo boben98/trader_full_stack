@@ -106,8 +106,8 @@ async function fxConfig(username) {
   }
 }
 
-async function updateUserArray(username) {
-  await User.find({ username: username })
+async function updateUserArray() {
+  await User.find()
     .populate("_account")
     .populate("_algo")
     .exec(async (err, result) => {

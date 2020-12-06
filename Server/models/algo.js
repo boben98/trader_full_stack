@@ -8,7 +8,7 @@ const Algo = db.model("Algo", {
   },
   granularity: {
     type: String,
-    default: "S5",
+    default: "M5",
   },
   stopLoss: {
     type: Number,

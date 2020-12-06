@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Card, Row, Col } from "react-bootstrap";
 import TransactionCard from "./TransactionCard";
+import { Link, withRouter  } from "react-router-dom";
 
 class Dashboard extends Component {
   constructor() {
@@ -24,18 +25,17 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
-    fetch("http://localhost:3001/account")
+    fetch("http://localhost:3001/account", { headers: new Headers({Authorization: "Bearer " + this.props.token})})
       .then((res) => res.json())
       .then((account) => {
         this.setState({
           currency: account.currency,
           balance: account.balance,
           profit: account.pl,
-          openPositionCount: account.openPositionCount,
+          openPositionCount: account.openPositionCount,          
         });
-        console.log("Acc ", this.state);
       });
-    fetch("http://localhost:3001/transactions/100")
+    fetch("http://localhost:3001/transactions/100", { headers: new Headers({Authorization: "Bearer " + this.props.token})})
       .then((res) => res.json())
       .then((transactions) => {
         let count = transactions.filter((t) =>
@@ -84,7 +84,7 @@ class Dashboard extends Component {
       transactionsLastWeek,
       transactions,
     } = this.state;
-    return (
+    if (typeof transactions !== "undefined") return (
       <Card
         style={{
           marginTop: "1em",
@@ -92,7 +92,7 @@ class Dashboard extends Component {
           padding: "1em",
         }}
       >
-        <Row className="d-flex justify-content-around">
+        <Row className="d-flex justify-content-between">
           <Col lg="3" md="6" sm="6">
             <Card
               style={{
@@ -206,7 +206,7 @@ class Dashboard extends Component {
               <Card.Title>All transactions</Card.Title>
               <Card.Body>
                 {transactions.map((tran) => {
-                  return <TransactionCard tran={tran}></TransactionCard>;
+                  return <TransactionCard key={tran.id} tran={tran}></TransactionCard>;
                 })}
               </Card.Body>
             </Card>
@@ -217,4 +217,4 @@ class Dashboard extends Component {
   }
 }
 
-export default Dashboard;
+export default withRouter(Dashboard);

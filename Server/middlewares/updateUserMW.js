@@ -1,7 +1,55 @@
 module.exports = (objRepo) => {
-  const User = objRepo.User;
-  return (req, res) => {
-    let fields;
+  const User = objRepo.UserModel;
+  const Algo = objRepo.AlgoModel;
+  const Account = objRepo.AccountModel;
+  return (req, res, next) => {
+    let update = {};
+    if (req.body.name) {
+      update.name = req.body.name;
+    }
+    if (req.body.phone) {
+      update.phone = req.body.phone;
+    }
+    if (req.body.oanda_api_key) {
+      update.oanda_api_key = req.body.oanda_api_key;
+    }
+    if (update) {
+      User.findByIdAndUpdate(req.user._id, update, (err, result) => {
+        if (err)
+          return res
+            .status(500)
+            .json({ message: "User update failed", error: err });
+        if (req.body.password) {
+          result.setPassword(req.body.password, (err2, result2) => {
+            if (err2)
+              return res
+                .status(500)
+                .json({ message: "Updating password failed", error: err2 });
+            result2.save((err3, result3) => {
+              if (err3)
+                return res
+                  .status(500)
+                  .json({ message: "Saving user failed", error: err3 });
+            });
+          });
+        }
+        if (req.body.accountId) {
+          Account.findByIdAndUpdate(
+            req.user._account._id,
+            { accountId: req.body.accountId },
+            (err, result) => {
+              if (err)
+                return res
+                  .status(500)
+                  .json({ message: "Account update failed", error: err });
+            }
+          );
+        }
+        return res.json(result);
+      });
+    }
+
+    /*let fields;
     if (
       typeof res.locals.user.salt === "undefined" &&
       typeof res.locals.user.hash === "undefined"
@@ -42,7 +90,7 @@ module.exports = (objRepo) => {
       }
     );
 
-    /*req.login(res.locals.user, (err) => {
+    req.login(res.locals.user, (err) => {
       if (err) return res.status(500).json({ message: "User login failed" });
     });*/
   };

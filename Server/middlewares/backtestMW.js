@@ -2,7 +2,7 @@ const backtest = require("../backtest");
 
 module.exports = () => {
   return (req, res) => {
-    let params = req.query;
+    let params = req.body;
     if (
       typeof params.balance === "undefined" ||
       typeof params.instrument === "undefined" ||

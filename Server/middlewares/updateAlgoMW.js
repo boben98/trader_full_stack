@@ -1,5 +1,5 @@
 module.exports = (objRepo) => {
-  const Algo = objRepo.Algo;
+  const Algo = objRepo.AlgoModel;
   return (req, res) => {
     res.locals.user = Algo.findOneAndUpdate(
       { _id: req.user.username.algo },
@@ -8,12 +8,12 @@ module.exports = (objRepo) => {
         useFindAndModify: false,
         new: true,
       },
-      (err, res) => {
+      (err, result) => {
         if (err)
           return res
             .status(500)
             .json({ message: "Algo update failed", error: err });
-        if (res) return res.json({ message: "Algo update successful" });
+        if (result) return res.json({ message: "Algo update successful" });
         return res.status(500).json({ message: "Algo update failed" });
       }
     );

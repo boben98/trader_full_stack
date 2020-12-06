@@ -3,9 +3,15 @@ import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import Button from "react-bootstrap/Button";
-import { Link } from "react-router-dom";
+import { Link, withRouter  } from "react-router-dom";
 
 class TraderNavbar extends Component {
+
+  button = () => {
+    if (this.props.token === "") return <Button variant="outline-success" onClick={() => this.props.history.push("/register")}>Register</Button>;
+    else return <Button variant="outline-success" onClick={() => {this.props.logout(); this.props.history.push("/");}}>Logout</Button>
+  }
+
   render() {
     return (
       <Navbar bg="light" expand="md">
@@ -13,18 +19,24 @@ class TraderNavbar extends Component {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mr-auto">
-            <Nav.Link as={Link} to="/index">
+            <Nav.Link as={Link} to="/dashboard">
               Dashboard
             </Nav.Link>
             <Nav.Link as={Link} to="/settings">
               Settings
             </Nav.Link>
+            <Nav.Link as={Link} to="/backtest">
+              Backtest
+            </Nav.Link>
+            <Nav.Link as={Link} to="/profile">
+              Profile
+            </Nav.Link>
           </Nav>
-          <Button variant="outline-success">Login</Button>
+          {this.button()}
         </Navbar.Collapse>
       </Navbar>
     );
   }
 }
 
-export default TraderNavbar;
+export default withRouter(TraderNavbar);
