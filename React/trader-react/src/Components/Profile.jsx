@@ -111,7 +111,7 @@ class Settings extends Component {
           </Form.Group>
           <Form.Group controlId="key">
             <Form.Label>Oanda API key</Form.Label>
-            <Form.Control type="text" placeholder="Enter API key" value={this.state.oanda_api_key} onChange={this.handleKeyChange} required/>
+            <Form.Control type="password" placeholder="Enter API key" value={this.state.oanda_api_key} onChange={this.handleKeyChange} required/>
           </Form.Group>
           <Form.Group controlId="account">
             <Form.Label>Account ID</Form.Label>

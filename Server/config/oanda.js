@@ -77,22 +77,6 @@ async function addUsers() {
   });
 }
 
-/*const granToSeconds = {
-  S5: 5,
-  S10: 10,
-  S15: 15,
-  S30: 30,
-  M1: 60,
-  M2: 120,
-  M4: 240,
-  M5: 300,
-  M10: 600,
-  M15: 900,
-  M30: 1800,
-  H1: 3600,
-  H2: 7200,
-};*/
-
 const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
 const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
 
@@ -337,34 +321,6 @@ async function trade(cross, username) {
     console.log(err);
   }
 }
-
-/*async function compareTimes(timeEarly, timeLater, difference = 0) {
-  //assuming the same day
-  if (typeof timeEarly === "undefined") return true;
-  /*const time1_seconds = await roundDown(
-    await timeToSeconds(timeEarly),
-    difference
-  );
-  const time2_seconds = await roundDown(
-    await timeToSeconds(timeLater),
-    difference
-  );
-
-  const time1_seconds = await timeToSeconds(timeEarly);
-  const time2_seconds = await timeToSeconds(timeLater);
-  const fullDay = 3600 * 23 + 60 * 59 + 59;
-  if (time1_seconds + difference > fullDay) return true;
-  return time1_seconds + difference <= time2_seconds;
-}
-
-async function timeToSeconds(time) {
-  let time1 = time.substring(11, 19);
-  return (
-    parseInt(time1.substring(0, 2)) * 3600 +
-    parseInt(time1.substring(3, 5)) * 60 +
-    parseInt(time1.substring(6))
-  );
-}*/
 
 async function getCandles(username) {
   const url = `https://api-fxpractice.oanda.com/v3/accounts/${user[username].account.accountId}/instruments/${user[username].algo.instrument}/candles`;
