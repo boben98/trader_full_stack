@@ -25,6 +25,7 @@ class Dashboard extends Component {
   }
 
   componentDidMount() {
+    if (!this.props.token) this.props.history.push('/');
     fetch("http://localhost:3001/account", { headers: new Headers({Authorization: "Bearer " + this.props.token})})
       .then((res) => res.json())
       .then((account) => {

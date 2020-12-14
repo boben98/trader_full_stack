@@ -1,6 +1,5 @@
 const fx = require("simple-fxtrade");
 const User = require("../models/user");
-const Order = require("../models/order");
 const Account = require("../models/account");
 const Algo = require("../models/algo");
 const SMA = require("technicalindicators").SMA;
@@ -217,7 +216,7 @@ async function isActiveTime(username) {
 async function onData(username) {
   if (typeof username === "any") return;
   console.log("onData: " + username);
-  //if ((await isActiveTime(username)) === false) return;
+  if ((await isActiveTime(username)) === false) return;
   try {
     await setLots(username);
     const cross = await checkCross(username);
@@ -281,6 +280,13 @@ async function checkCross(username) {
   const len1 = user[username].MA1.length;
   const len2 = user[username].MA2.length;
 
+  const diff = Math.abs(
+    user[username].MA1[len1 - 1] - user[username].MA2[len2 - 1]
+  );
+
+  if (!user[username].makeOrder && diff > user[username].makeOrderWaitLimit)
+    user[username].makeOrder = true;
+
   let ret = 0;
 
   if (
@@ -297,6 +303,7 @@ async function checkCross(username) {
 }
 
 async function trade(cross, username) {
+  if (!user[username].makeOrder) return;
   if (cross === 0 || user[username].inTrade) return;
   setTimeout(() => {
     user[username].inTrade = false;
@@ -317,6 +324,7 @@ async function trade(cross, username) {
   await fxConfig(username);
   try {
     await fx.orders.create(order);
+    user[username].makeOrder = false;
   } catch (err) {
     console.log(err);
   }

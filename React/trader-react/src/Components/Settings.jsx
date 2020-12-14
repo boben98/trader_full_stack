@@ -15,6 +15,7 @@ class Settings extends Component {
       marginRatio: Number,
       trailValue: Number,
       trailWait: Number,
+      makeOrderWaitLimit: Number,
     };   
 
     this.handleInstrumentChange = this.handleInstrumentChange.bind(this);
@@ -24,6 +25,7 @@ class Settings extends Component {
     this.handleMA2Change = this.handleMA2Change.bind(this);
     this.handleMarginRatioChange = this.handleMarginRatioChange.bind(this);
     this.handleTrailValueChange = this.handleTrailValueChange.bind(this);
+    this.handleMakeOrderWaitLimitChange = this.handleMakeOrderWaitLimitChange.bind(this);
     this.handleTrailWaitChange = this.handleTrailWaitChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   };   
@@ -68,6 +70,11 @@ class Settings extends Component {
     this.setState({trailWait: event.target.value});
   }
 
+  handleMakeOrderWaitLimitChange(event) {
+    event.preventDefault();
+    this.setState({makeOrderWaitLimit: event.target.value});
+  }
+
   handleSubmit(event) {
     event.preventDefault();
     fetch("http://localhost:3001/algo/save", 
@@ -81,7 +88,8 @@ class Settings extends Component {
               MAperiod2: this.state.MAperiod2,
               marginRatio: this.state.marginRatio,
               trailValue: this.state.trailValue,
-              trailWait: this.state.trailWait,
+              trailWait: this.state.trailWait,  
+              makeOrderWaitLimit: this.state.makeOrderWaitLimit,
             }),
           headers: new Headers({Authorization: "Bearer " + this.props.token})        
         })
@@ -92,6 +100,7 @@ class Settings extends Component {
   } 
 
   componentDidMount() {
+    if (!this.props.token) this.props.history.push('/');
     fetch("http://localhost:3001/algo", { headers: new Headers({Authorization: "Bearer " + this.props.token})})
       .then((res) => res.json())
       .then((algo) => {
@@ -151,6 +160,10 @@ class Settings extends Component {
           <Form.Group controlId="trailWait">
             <Form.Label>Trailwait time in candles</Form.Label>
             <Form.Control type="number" placeholder="" value={this.state.trailWait} onChange={this.handleTrailWaitChange} required/>
+          </Form.Group>
+          <Form.Group controlId="makeOrderWaitLimit">
+            <Form.Label>Make Order Wait Limit in points</Form.Label>
+            <Form.Control type="number" placeholder="" value={this.state.makeOrderWaitLimit} onChange={this.handleMakeOrderWaitLimitChange} required/>
           </Form.Group>
           <Button variant="primary" type="submit">
             Save

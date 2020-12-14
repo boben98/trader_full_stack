@@ -1,9 +1,9 @@
 module.exports = (objRepo) => {
   const Algo = objRepo.AlgoModel;
   return (req, res) => {
-    res.locals.user = Algo.findOneAndUpdate(
-      { _id: req.user.username.algo },
-      req.query,
+    Algo.findOneAndUpdate(
+      { _id: req.user._algo },
+      req.body,
       {
         useFindAndModify: false,
         new: true,

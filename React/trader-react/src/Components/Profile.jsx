@@ -71,6 +71,7 @@ class Settings extends Component {
   }
 
   componentDidMount() {
+    if (!this.props.token) this.props.history.push('/');
     fetch("http://localhost:3001/user", { headers: new Headers({Authorization: "Bearer " + this.props.token})})
       .then((res) => res.json())
       .then((user) => {

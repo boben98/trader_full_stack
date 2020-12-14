@@ -6,6 +6,7 @@ const compareTimes = require("./timeHandler").compareTimes;
 const granToSeconds = require("./timeHandler").granToSeconds;
 
 let user = new User();
+let makeOrder = true;
 
 async function runBacktest(balance, algo, timeframe) {
   user.balance = balance;
@@ -21,16 +22,6 @@ async function runBacktest(balance, algo, timeframe) {
   return getAllCandles().then(() => runAlgorithm());
   //return runAlgorithm();
 }
-
-/*let algo = {
-  instrument: "EUR_HUF",
-  MAperiod1: 15,
-  MAperiod2: 30,
-};
-
-user.algo = algo;
-
-getAllCandles();*/
 
 function getAllCandles() {
   return new Promise(async (resolve, reject) => {
@@ -148,6 +139,10 @@ function setLots() {
 }
 
 function checkCross(index) {
+  const diff = Math.abs(user.candles[index].MA1 - user.candles[index].MA2);
+
+  if (!makeOrder && diff > user.algo.makeOrderWaitLimit) makeOrder = true;
+
   let ret = 0;
 
   if (
@@ -164,6 +159,7 @@ function checkCross(index) {
 }
 
 function trade(cross, i) {
+  if (!makeOrder) return;
   if (cross === 0 || user.margin < user.algo.units / user.algo.marginRatio)
     return;
   const order = {
@@ -180,6 +176,7 @@ function trade(cross, i) {
   user.orders.push(order);
   user.allOrders.push(order);
   user.margin -= order.units / user.algo.marginRatio;
+  makeOrder = false;
 }
 
 function trailingStop(order, i) {

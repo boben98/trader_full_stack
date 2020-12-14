@@ -15,6 +15,7 @@ class Settings extends Component {
       marginRatio: Number,
       trailValue: Number,
       trailWait: Number,
+      makeOrderWaitLimit: Number,
       from: String,
       to: String,
       orders: [],
@@ -30,6 +31,7 @@ class Settings extends Component {
     this.handleMarginRatioChange = this.handleMarginRatioChange.bind(this);
     this.handleTrailValueChange = this.handleTrailValueChange.bind(this);
     this.handleTrailWaitChange = this.handleTrailWaitChange.bind(this);
+    this.handleMakeOrderWaitLimitChange = this.handleMakeOrderWaitLimitChange.bind(this);
     this.handleFromChange = this.handleFromChange.bind(this);
     this.handleToChange = this.handleToChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -80,6 +82,11 @@ class Settings extends Component {
     this.setState({trailWait: event.target.value});
   }
 
+  handleMakeOrderWaitLimitChange(event) {
+    event.preventDefault();
+    this.setState({makeOrderWaitLimit: event.target.value});
+  }
+
   handleFromChange(event) {
     event.preventDefault();
     this.setState({from: event.target.value});
@@ -103,7 +110,8 @@ class Settings extends Component {
               MAperiod2: this.state.MAperiod2,
               marginRatio: this.state.marginRatio,
               trailValue: this.state.trailValue,
-              trailWait: this.state.trailWait,
+              trailWait: this.state.trailWait,              
+              makeOrderWaitLimit: this.state.makeOrderWaitLimit,
               from: this.state.from,
               to: this.state.to,
             }),
@@ -119,6 +127,7 @@ class Settings extends Component {
   }
 
   componentDidMount() {
+    if (!this.props.token) this.props.history.push('/');
     fetch("http://localhost:3001/algo", { headers: new Headers({Authorization: "Bearer " + this.props.token})})
       .then((res) => res.json())
       .then((algo) => {
@@ -174,6 +183,10 @@ class Settings extends Component {
                         <Form.Label>Trailwait time in candles</Form.Label>
                         <Form.Control type="number" placeholder="" value={this.state.trailWait} onChange={this.handleTrailWaitChange} required/>
                     </Form.Group>
+                    <Form.Group controlId="makeOrderWaitLimit">
+                        <Form.Label>Make Order Wait Limit in points</Form.Label>
+                        <Form.Control type="number" placeholder="" value={this.state.makeOrderWaitLimit} onChange={this.handleMakeOrderWaitLimitChange} required/>
+                    </Form.Group>
                     <Form.Group controlId="from">
                         <Form.Label>Starting time</Form.Label>
                         <Form.Control type="string" placeholder="YYYY-MM-DD" value={this.state.from} onChange={this.handleFromChange} required/>
@@ -190,7 +203,7 @@ class Settings extends Component {
             </Col>           
                 
             <Col md="6">
-                { this.state.orders && this.state.profit &&
+                { this.state.profit &&
                     <Card md = "auto"
                         style={{
                         marginTop: "1em",
@@ -203,6 +216,11 @@ class Settings extends Component {
                         <Form.Control type="text" placeholder="" value={this.state.profit} readonly/>
                     </Form.Group>                
                     </Card>
+                }
+            </Col>
+            <Col md="6">
+                { !this.state.profit &&
+                    <h4>Please wait for the results!</h4>
                 }
             </Col>
         </Row>

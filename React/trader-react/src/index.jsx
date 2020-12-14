@@ -19,7 +19,6 @@ class Trader extends Component {
     if (ls === null) this.setState({token: ""});
     else if (typeof ls.token === "undefined") this.setState({token: ""});
     else {
-      //const token = localStorage.getItem('token').token;
       this.setState(ls);
     }
   }  
@@ -42,7 +41,7 @@ class Trader extends Component {
           <TraderNavbar token={this.state.token} logout={this.logout}/>
           <Switch>
             <Route exact path="/" render={ (props) => <Login {...props} setToken = {this.setToken} /> } />  {/* /login */}
-            <Route exact path="/forgotten" component={Forgotten} /> {/* /forgotten */}
+            {/*<Route exact path="/forgotten" component={Forgotten} /> {/* /forgotten */}
             <Route exact path="/register" render={ (props) => <Register {...props} token={this.state.token} /> } /> {/* /register */}
             <Route exact path="/dashboard" render={ (props) => <Dashboard {...props} token={this.state.token} /> } /> {/* /transactions, /account */}
             <Route exact path="/settings" render={ (props) => <Settings {...props} token={this.state.token} /> } /> {/* /user, /algo */}

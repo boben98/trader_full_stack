@@ -1,7 +1,6 @@
 const db = require("./config/db");
 const User = require("./models/user");
 const Account = require("./models/account");
-const Order = require("./models/order");
 const Algo = require("./models/algo");
 const passport = require("passport");
 const getUserMW = require("./middlewares/getUserMW");
@@ -40,12 +39,12 @@ module.exports = function (app) {
   app.use("/backtest", authMW, backtestMW());
 
   app.use("/login", loginMW());
-  app.get("/logout", authMW, logoutMW());
+  //app.get("/logout", authMW, logoutMW());
   app.use("/register", registerMW(objRepo));
-  app.use(
+  /*app.use(
     "/forgotten",
     sendEmailMW(),
     setPasswordMW(objRepo),
     updateUserMW(objRepo)
-  );
+  );*/
 };

@@ -62,7 +62,7 @@ module.exports = (objRepo) => {
           return res.status(500).json({ message: "User login failed" });
         } 
       });*/
-
+      oanda.update();
       passport.authenticate("local", { session: false }, (err, user, info) => {
         if (err) {
           return res.status(400).json({
@@ -83,7 +83,6 @@ module.exports = (objRepo) => {
           );
           return res.json({ user: user.username, token });
         });
-        oanda.update();
       })(req, res);
     });
   };

@@ -12,8 +12,9 @@ module.exports = () => {
       typeof params.MAperiod2 === "undefined" ||
       typeof params.marginRatio === "undefined" ||
       typeof params.trailValue === "undefined" ||
-      typeof params.trailWait === "undefined" ||
+      typeof params.makeOrderWaitLimit === "undefined" ||
       typeof params.from === "undefined" ||
+      typeof params.trailWait === "undefined" ||
       typeof params.to === "undefined"
     )
       return res.status(400).json({ message: "Backtest parameter(s) missing" });
@@ -26,7 +27,8 @@ module.exports = () => {
       MAperiod2: parseInt(params.MAperiod2),
       marginRatio: parseFloat(params.marginRatio),
       trailValue: parseFloat(params.trailValue),
-      trailWait: parseFloat(params.trailWait),
+      trailWait: 0, //possible upgrade
+      makeOrderWaitLimit: parseFloat(params.makeOrderWaitLimit),
     };
 
     let timeframe = {
