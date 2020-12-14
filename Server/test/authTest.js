@@ -1,6 +1,9 @@
 var expect = require("chai").expect;
-const loginMW = require("../middleware/auth/loginMW");
-const registerMW = require("../middleware/auth/registerMW");
+const loginMW = require("../middlewares/auth/loginMW");
+const registerMW = require("../middlewares/auth/registerMW");
+const User = require("../models/user");
+const Account = require("../models/account");
+const Algo = require("../models/algo");
 
 describe("login middleware ", () => {
   it("should return a token", (done) => {
