@@ -1,21 +1,9 @@
 var expect = require("chai").expect;
 const setHeaderMW = require("../middlewares/setHeaderMW");
 
-describe("Content-type", () => {
-  it("should be application/json", (done) => {
-    const req = {
-      login: (a, b, cb) => {
-        cb("noterr");
-      },
-      body: {
-        name: "asdas",
-        email: "asdasd",
-        phone: 2321312,
-        oanda_api_key: "dfasdasdasdddasdfas",
-        accountId: "asdsadasd",
-        password: "pass",
-      },
-    };
+describe("Content-type", function () {
+  it("should be application/json", function (done) {
+    const req = {};
 
     let res = {
       header: null,

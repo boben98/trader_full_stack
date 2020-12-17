@@ -4,7 +4,7 @@ module.exports = () => {
   return (req, res) => {
     console.log(req);
     oanda.getAccountSummary(req.user.username).then((value) => {
-      res.json(value);
+      return res.json(value);
     });
   };
 };

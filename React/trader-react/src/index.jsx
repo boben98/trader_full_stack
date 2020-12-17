@@ -15,11 +15,11 @@ import Backtest from "./Components/Backtest";
 class Trader extends Component {
   constructor() {
     super();
-    const ls = JSON.parse(localStorage.getItem('token'));
-    if (ls === null) this.setState({token: ""});
-    else if (typeof ls.token === "undefined") this.setState({token: ""});
+    const token = JSON.parse(localStorage.getItem('token'));
+    if (token === null) this.setState({token: ""});
+    else if (typeof token.token === "undefined") this.setState({token: ""});
     else {
-      this.setState(ls);
+      this.setState(token);
     }
   }  
   state = JSON.parse(localStorage.getItem('token')) !== null ? JSON.parse(localStorage.getItem('token')) : {token: ""} ;

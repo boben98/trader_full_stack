@@ -110,7 +110,7 @@ async function updateUserArray() {
 
 const run = async () => {
   //await addUsers();
-  await User.find()
+  User.find()
     .populate("_account")
     .populate("_algo")
     .exec(async (err, result) => {
@@ -124,7 +124,9 @@ const run = async () => {
         user[un].candleValues = [];
         user[un].account = u._account;
         user[un].algo = u._algo;
+        console.log("init done" + un);
       });
+      console.log("skipped");
       await runAlgorithm();
     });
 };

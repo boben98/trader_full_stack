@@ -5,8 +5,8 @@ const User = require("../models/user");
 const Account = require("../models/account");
 const Algo = require("../models/algo");
 
-describe("login middleware ", () => {
-  it("should return a token", (done) => {
+describe("login middleware ", function () {
+  it("should return a token", function (done) {
     const objRepo = {
       UserModel: User,
       AlgoModel: Algo,

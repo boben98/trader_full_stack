@@ -66,7 +66,7 @@ function getAllCandles() {
       user.candles[len - 1 - i].MA1 = MA1[MA1.length - 2 - i];
       user.candles[len - 1 - i].MA2 = MA2[MA2.length - 2 - i];
     }
-    console.log(user.candles);
+    //console.log(user.candles);
     resolve();
   });
 }

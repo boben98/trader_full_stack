@@ -66,7 +66,7 @@ class Settings extends Component {
               password: this.state.password
             }),
           headers: new Headers({Authorization: "Bearer " + this.props.token})})
-      .then((res) => this.props.history.push('/dashboard'))
+      .then(() => this.props.history.push('/dashboard'))
       .catch(console.log); 
   }
 
