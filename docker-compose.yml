@@ -1,0 +1,39 @@
+version: "3"
+services:
+    react:
+        tty: true
+        stdin_open: true
+        build: react
+        restart: always
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./react:/react
+            - /react/node_modules
+        links:
+            - server
+        networks:
+            - webappnetwork
+    server:
+        build: server
+        restart: always
+        ports:
+            - "3001:3001"
+        volumes:
+            - ./server:/server
+            - /server/node_modules
+        depends_on:
+            - mongodb
+        networks:
+            - webappnetwork
+    mongodb:
+        image: mongo
+        restart: always
+        container_name: mongodb
+        ports:
+            - 27017:27017
+        networks:
+            - webappnetwork
+networks:
+    webappnetwork:
+        driver: bridge
