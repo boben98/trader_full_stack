@@ -75,13 +75,12 @@ module.exports = (objRepo) => {
           if (err) {
             res.send(err);
           }
-          // generate a signed son web token with the contents of user object and return it in the response
-          const token = jwt.sign(
+          /*const token = jwt.sign(
             { id: user.id, email: user.username },
             "secret",
             { expiresIn: "2h" }
-          );
-          return res.json({ user: user.username, token });
+          );*/
+          return res.json({ user: user.username });
         });
       })(req, res);
     });

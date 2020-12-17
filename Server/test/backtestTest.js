@@ -1,9 +1,9 @@
 var expect = require("chai").expect;
 const backtest = require("../backtest");
 
-describe("Return absolute value", function () {
+describe("Return value", function () {
   this.timeout(10000);
-  it("should be less than starting balance", function (done) {
+  it("should be more than starting balance * (-1)", function (done) {
     const algo = {
       instrument: "EUR_USD",
       granularity: "H1",
@@ -24,7 +24,7 @@ describe("Return absolute value", function () {
     const balance = 100000;
 
     backtest.run(balance, algo, timeframe).then((ret) => {
-      expect(Math.abs(ret.profit)).to.be.within(0, balance);
+      expect(ret.profit).to.be.above(balance * -1);
       done();
     });
   });

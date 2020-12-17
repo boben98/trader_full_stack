@@ -67,9 +67,9 @@ class Settings extends Component {
             })})
       .then((res) => res.json())
       .then((res) => {
-        if(res.token){
+        if(res.user){
           this.props.history.push('/');        
-        } else alert(res.message.message);        
+        } else alert(res.error.message);     
       });    
   }
 

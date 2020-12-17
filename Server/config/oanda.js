@@ -80,7 +80,7 @@ const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
 const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
 
 async function fxConfig(username) {
-  console.log("config: " + username);
+  //console.log("config: " + username);
   try {
     await fx.configure({ apiKey: user[username].oanda_api_key });
     await fx.setAccount(user[username].account.accountId);
@@ -124,16 +124,14 @@ const run = async () => {
         user[un].candleValues = [];
         user[un].account = u._account;
         user[un].algo = u._algo;
-        console.log("init done" + un);
       });
-      console.log("skipped");
       await runAlgorithm();
     });
 };
 
 async function getAccountSummary(username) {
   await fxConfig(username);
-  console.log("summary");
+  //console.log("summary");
   let account;
   try {
     account = (await fx.summary()).account;
@@ -180,7 +178,7 @@ async function getTransactions(size, username) {
 
 async function getBalance(username) {
   await fxConfig(username);
-  console.log("balance: " + username);
+  //console.log("balance: " + username);
   let summary;
   try {
     summary = await fx.summary();
@@ -217,7 +215,7 @@ async function isActiveTime(username) {
 
 async function onData(username) {
   if (typeof username === "any") return;
-  console.log("onData: " + username);
+  //console.log("onData: " + username);
   if ((await isActiveTime(username)) === false) return;
   try {
     await setLots(username);
@@ -363,7 +361,7 @@ async function getCandles(username) {
         user[username].candleValues[i] = close;
       }
       user[username].lastCloseTime = nextCloseTime;
-      console.log(user[username].lastCloseTime, "\n");
+      //console.log(user[username].lastCloseTime, "\n");
       return true;
     })
     .catch(console.log);

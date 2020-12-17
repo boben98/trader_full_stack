@@ -25,7 +25,9 @@ describe("Return type", function () {
 
     oanda.run();
     setTimeout(() => {
-      getAccountMW()(req, res);
+      getAccountMW()(req, res, (err) => {
+        expect(err).to.eql(undefined);
+      });
     }, 1000);
 
     setTimeout(() => {
@@ -52,7 +54,9 @@ describe("Return type", function () {
 
     oanda.run();
     setTimeout(() => {
-      getAlgoMW()(req, res);
+      getAlgoMW()(req, res, (err) => {
+        expect(err).to.eql(undefined);
+      });
     }, 1000);
 
     setTimeout(() => {
@@ -82,7 +86,9 @@ describe("Return type", function () {
 
     oanda.run();
     setTimeout(() => {
-      getTransactionsMW()(req, res);
+      getTransactionsMW()(req, res, (err) => {
+        expect(err).to.eql(undefined);
+      });
     }, 1000);
 
     setTimeout(() => {

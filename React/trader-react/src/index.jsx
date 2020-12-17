@@ -34,6 +34,10 @@ class Trader extends Component {
     localStorage.clear();
   }
 
+  componentWillUnmount() {
+    this.logout();
+  }
+
   render() {
     return (
       <Router>
