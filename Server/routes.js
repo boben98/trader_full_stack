@@ -1,4 +1,3 @@
-const db = require("./config/db");
 const User = require("./models/user");
 const Account = require("./models/account");
 const Algo = require("./models/algo");
@@ -12,9 +11,6 @@ const getTransactionsMW = require("./middlewares/getTransactionsMW");
 const setHeaderMW = require("./middlewares/setHeaderMW");
 const registerMW = require("./middlewares/auth/registerMW");
 const loginMW = require("./middlewares/auth/loginMW");
-const logoutMW = require("./middlewares/auth/logoutMW");
-const sendEmailMW = require("./middlewares/auth/sendEmailMW");
-const setPasswordMW = require("./middlewares/setPasswordMW");
 const backtestMW = require("./middlewares/backtestMW");
 
 module.exports = function (app) {
@@ -39,12 +35,5 @@ module.exports = function (app) {
   app.use("/backtest", authMW, backtestMW());
 
   app.use("/login", loginMW());
-  //app.get("/logout", authMW, logoutMW());
   app.use("/register", registerMW(objRepo));
-  /*app.use(
-    "/forgotten",
-    sendEmailMW(),
-    setPasswordMW(objRepo),
-    updateUserMW(objRepo)
-  );*/
 };

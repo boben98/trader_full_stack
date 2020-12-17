@@ -1,4 +1,3 @@
-const Schema = require("mongoose").Schema;
 const db = require("../config/db");
 
 const Algo = db.model("Algo", {

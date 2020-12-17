@@ -2,9 +2,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const passport = require("passport");
-const session = require("express-session");
 const oanda = require("./config/oanda");
-const MongoStore = require("connect-mongo")(session);
 const User = require("./models/user");
 
 const port = 3001;
@@ -22,7 +20,6 @@ const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 
 app.use(passport.initialize());
-//app.use(passport.session());
 passport.use(
   new LocalStrategy(
     {
@@ -32,7 +29,6 @@ passport.use(
     User.authenticate()
   )
 );
-//passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 passport.use(
@@ -58,11 +54,6 @@ passport.use(
 app.use((err, req, res, next) => {
   console.log(err);
 });
-
-/*app.use((req, res, next) => {
-  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
-  next();
-});*/
 
 oanda.run();
 

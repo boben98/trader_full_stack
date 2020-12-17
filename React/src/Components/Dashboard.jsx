@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Card, Row, Col } from "react-bootstrap";
 import TransactionCard from "./TransactionCard";
-import { Link, withRouter  } from "react-router-dom";
+import { withRouter  } from "react-router-dom";
 
 class Dashboard extends Component {
   constructor() {

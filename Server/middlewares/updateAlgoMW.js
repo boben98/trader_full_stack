@@ -17,9 +17,5 @@ module.exports = (objRepo) => {
         return res.status(500).json({ message: "Algo update failed" });
       }
     );
-
-    /*req.login(res.locals.user, (err) => {
-      if (err) return res.status(500).json({ message: "User login failed" });
-    });*/
   };
 };

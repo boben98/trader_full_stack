@@ -1,10 +1,9 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import TraderNavbar from "./Components/TraderNavbar";
 import Dashboard from "./Components/Dashboard";
 import Login from "./Components/Login";
-import Forgotten from "./Components/Forgotten";
 import Register from "./Components/Register";
 import Settings from "./Components/Settings";
 import Profile from "./Components/Profile";
@@ -45,7 +44,6 @@ class Trader extends Component {
           <TraderNavbar token={this.state.token} logout={this.logout}/>
           <Switch>
             <Route exact path="/" render={ (props) => <Login {...props} setToken = {this.setToken} /> } />  {/* /login */}
-            {/*<Route exact path="/forgotten" component={Forgotten} /> {/* /forgotten */}
             <Route exact path="/register" render={ (props) => <Register {...props} token={this.state.token} /> } /> {/* /register */}
             <Route exact path="/dashboard" render={ (props) => <Dashboard {...props} token={this.state.token} /> } /> {/* /transactions, /account */}
             <Route exact path="/settings" render={ (props) => <Settings {...props} token={this.state.token} /> } /> {/* /user, /algo */}

@@ -80,7 +80,6 @@ const balMuls = [0.6, 0.8, 1, 2, 3, 5, 7, 10];
 const lotMuls = [0.25, 0.5, 0.7, 1, 1.5, 1.95, 2.34, 2.808, 3.3696];
 
 async function fxConfig(username) {
-  //console.log("config: " + username);
   try {
     await fx.configure({ apiKey: user[username].oanda_api_key });
     await fx.setAccount(user[username].account.accountId);
@@ -109,7 +108,6 @@ async function updateUserArray() {
 }
 
 const run = async () => {
-  //await addUsers();
   User.find()
     .populate("_account")
     .populate("_algo")
@@ -131,7 +129,6 @@ const run = async () => {
 
 async function getAccountSummary(username) {
   await fxConfig(username);
-  //console.log("summary");
   let account;
   try {
     account = (await fx.summary()).account;
@@ -178,7 +175,6 @@ async function getTransactions(size, username) {
 
 async function getBalance(username) {
   await fxConfig(username);
-  //console.log("balance: " + username);
   let summary;
   try {
     summary = await fx.summary();
@@ -194,7 +190,6 @@ async function runAlgorithm() {
   keys.forEach(async (username) => {
     user[username].startBalance = await getBalance(username);
     user[username].startUnits = user[username].algo.units;
-    //await testDataOptions(username);
     setInterval(
       onData,
       granToSeconds[user[username].algo.granularity] * 200,
@@ -215,7 +210,6 @@ async function isActiveTime(username) {
 
 async function onData(username) {
   if (typeof username === "any") return;
-  //console.log("onData: " + username);
   if ((await isActiveTime(username)) === false) return;
   try {
     await setLots(username);
@@ -361,17 +355,12 @@ async function getCandles(username) {
         user[username].candleValues[i] = close;
       }
       user[username].lastCloseTime = nextCloseTime;
-      //console.log(user[username].lastCloseTime, "\n");
       return true;
     })
     .catch(console.log);
 }
 
 async function testDataOptions(username) {
-  console.log("Summary");
-  let a = (await fx.summary()).account;
-  console.log(a);
-  console.log("\n");
   /*console.log("Summary");
   console.log((await fx.summary()).account);
   console.log("\n");
@@ -391,7 +380,7 @@ async function testDataOptions(username) {
   console.log("Positions");
   console.log((await fx.positions()).positions);
   console.log("\n");
-  
+
   console.log("Transactions");
   console.log(await fx.transactions());
   console.log("\n");
@@ -400,18 +389,16 @@ async function testDataOptions(username) {
   console.log(await fx.pricing({ instruments: "EUR_USD" }));
   console.log("\n");
 
-  */
   await fxConfig(username);
   console.log("Candles");
   console.log((await fx.candles({ id: "EUR_USD" })).candles);
   console.log("\n");
-  /*
 
   console.log("Close prices");
   fx.candles({ id: "EUR_USD" });
   const d = (await fx.candles({ id: "EUR_USD" })).candles;
   d.forEach((r) => {
-    // console.log(r.mid.c);
+    console.log(r.mid.c);
   });*/
 }
 

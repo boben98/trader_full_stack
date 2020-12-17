@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import { Card, Row, Col } from "react-bootstrap";
 
 const TransactionCard = ({ tran }) => {

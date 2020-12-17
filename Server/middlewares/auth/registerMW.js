@@ -1,4 +1,3 @@
-const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const oanda = require("../../config/oanda");
 
@@ -51,17 +50,6 @@ module.exports = (objRepo) => {
           .json({ message: "User registration failed", error: err });
       }
 
-      /*user.save((err) => {
-        if (err) {
-          return res.status(500).json({ message: "User registration failed" });
-        }
-      });
-
-      req.login(user, (err) => {
-        if (err) {
-          return res.status(500).json({ message: "User login failed" });
-        } 
-      });*/
       oanda.update();
       passport.authenticate("local", { session: false }, (err, user, info) => {
         if (err) {
@@ -75,11 +63,6 @@ module.exports = (objRepo) => {
           if (err) {
             res.send(err);
           }
-          /*const token = jwt.sign(
-            { id: user.id, email: user.username },
-            "secret",
-            { expiresIn: "2h" }
-          );*/
           return res.json({ user: user.username });
         });
       })(req, res);

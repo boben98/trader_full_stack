@@ -2,7 +2,7 @@ module.exports = (objRepo) => {
   const User = objRepo.UserModel;
   const Algo = objRepo.AlgoModel;
   const Account = objRepo.AccountModel;
-  return (req, res, next) => {
+  return (req, res) => {
     let update = {};
     if (req.body.name) {
       update.name = req.body.name;
